@@ -1,0 +1,26 @@
+# FastAPI e dependências
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Banco de dados
+supabase
+pydantic
+pydantic-settings
+email-validator
+
+# IA - Multi-provider support
+langchain
+langchain-openai
+langchain-google-genai
+langchain-anthropic
+langchain-community
+
+# Utilitários
+python-dotenv
+python-jose[cryptography]
+passlib[bcrypt]
+python-dateutil
+
+# CORS para frontend
+# (já incluído no FastAPI)
