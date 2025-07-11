@@ -137,7 +137,13 @@ class AlunoResponse(AlunoBase):
     idade: Optional[int] = None
     tem_restricoes: Optional[bool] = None
     
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_encoders={
+            date: lambda v: v.isoformat() if v else None,
+            datetime: lambda v: v.isoformat() if v else None
+        }
+    )
     
     @field_validator('idade', mode='before')
     def calcular_idade(cls, v, values):

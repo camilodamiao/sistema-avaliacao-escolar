@@ -7,7 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
 
-from app.config import get_settings
+from app.config import (
+    get_settings,
+    ESCALA_AVALIACAO,
+    CATEGORIAS_FUNDAMENTAL,
+    CATEGORIAS_INFANTIL,
+    TAGS_COMPORTAMENTAIS_PADRAO
+)
+
 
 # 🚨 ÂNCORA: CRÍTICO - Configuração do ciclo de vida da aplicação
 # Contexto: Gerencia recursos que devem ser iniciados/fechados com a aplicação
@@ -35,6 +42,7 @@ app = FastAPI(
     docs_url="/docs",  # Swagger UI
     redoc_url="/redoc"  # ReDoc
 )
+
 
 # Configurar CORS
 app.add_middleware(
@@ -106,21 +114,13 @@ async def config_info():
     }
 
 
-# Importar configurações para usar neste módulo
-from app.config import (
-    ESCALA_AVALIACAO, 
-    CATEGORIAS_FUNDAMENTAL, 
-    CATEGORIAS_INFANTIL,
-    TAGS_COMPORTAMENTAIS_PADRAO
-)
-
-
 # 🚨 ÂNCORA: CRÍTICO - Registro de rotas
 # Contexto: Todas as rotas da API devem ser registradas aqui
 # Cuidado: Ordem pode afetar precedência de rotas
-from app.api.endpoints import turmas
+from app.api.endpoints import turmas, alunos
 
 app.include_router(turmas.router, prefix="/api/v1")
+app.include_router(alunos.router, prefix="/api/v1")
 
 
 if __name__ == "__main__":
