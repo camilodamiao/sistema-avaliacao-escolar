@@ -1,23 +1,38 @@
 // src/components/Dashboard.jsx
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 
 function Dashboard() {
-  // Estados do componente
+  const navigate = useNavigate()
   const [turmas, setTurmas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  
+  // Pegar dados do usuário do localStorage
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
 
-  // useEffect - roda quando o componente carrega
   useEffect(() => {
+    // Se não tem usuário logado, redireciona para login
+    if (!usuario.email) {
+      navigate('/login')
+      return
+    }
+    
     buscarTurmas()
-  }, []) // Array vazio = roda só uma vez
+  }, [])
 
-  // Função para buscar turmas da API
   const buscarTurmas = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/turmas')
+      
+      // Por enquanto, passar tipo de usuário como query param
+      const response = await api.get('/turmas', {
+        params: {
+          usuario_tipo: usuario.tipo,
+        }
+      })
+      
       setTurmas(response.data)
       setError(null)
     } catch (err) {
@@ -61,13 +76,16 @@ function Dashboard() {
 
   return (
     <div className="p-4">
-      {/* Título com estilo acolhedor */}
+      {/* Header com informações do usuário */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-gray-800 mb-2">
-          Minhas Turmas
+          {usuario.tipo === 'coordenador' ? 'Turmas Supervisionadas' : 'Minhas Turmas'}
         </h2>
         <p className="text-gray-600">
-          Selecione uma turma para iniciar as avaliações do dia
+          {usuario.tipo === 'coordenador' 
+            ? 'Visualize as turmas dos professores que você coordena'
+            : 'Selecione uma turma para iniciar as avaliações do dia'
+          }
         </p>
       </div>
       
@@ -76,6 +94,7 @@ function Dashboard() {
         {turmas.map(turma => (
           <div 
             key={turma.id}
+            onClick={() => navigate(`/turma/${turma.id}`)}
             className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer"
           >
             {/* Cabeçalho colorido do card */}
@@ -91,6 +110,14 @@ function Dashboard() {
             
             {/* Corpo do card */}
             <div className="p-6">
+              {/* Mostrar professor se tiver */}
+              {turma.professor_nome && (
+                <div className="mb-4 text-sm text-gray-600">
+                  <p className="font-semibold">Professor(a):</p>
+                  <p>{turma.professor_nome}</p>
+                </div>
+              )}
+              
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-3xl font-bold text-orange-600">

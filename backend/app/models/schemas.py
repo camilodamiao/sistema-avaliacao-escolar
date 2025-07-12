@@ -69,10 +69,11 @@ class TurmaResponse(TurmaBase):
     ativo: bool
     created_at: datetime
     updated_at: datetime
-    
+        
     # Campos calculados
     nome_completo: Optional[str] = None
     quantidade_atual: Optional[int] = 0
+    professor_nome: Optional[str] = None
     
     model_config = ConfigDict(from_attributes=True)
     
@@ -283,3 +284,31 @@ class ErrorResponse(BaseModel):
 class PaginationParams(BaseModel):
     page: int = Field(1, ge=1)
     page_size: int = Field(20, ge=1, le=100)
+
+# ========== SCHEMAS DE USUÁRIO ==========
+
+class UsuarioBase(BaseModel):
+    email: EmailStr
+    nome: str
+    tipo: TipoUsuario
+    telefone: Optional[str] = None
+    coordenador_id: Optional[UUID] = None
+    escola_id: Optional[UUID] = None
+
+class UsuarioCreate(UsuarioBase):
+    senha: str
+
+class UsuarioUpdate(BaseModel):
+    nome: Optional[str] = None
+    telefone: Optional[str] = None
+    coordenador_id: Optional[UUID] = None
+    tipo: Optional[TipoUsuario] = None
+    ativo: Optional[bool] = None
+
+class UsuarioResponse(UsuarioBase):
+    id: UUID
+    ativo: bool
+    created_at: datetime
+    updated_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)

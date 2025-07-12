@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     telefone VARCHAR(20),  -- NOVO: telefone opcional
     tipo VARCHAR(50) CHECK (tipo IN ('professor', 'coordenador', 'admin')) DEFAULT 'professor',
     escola_id UUID REFERENCES escolas(id),
+    coordenador_id UUID REFERENCES usuarios(id)
     ativo BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

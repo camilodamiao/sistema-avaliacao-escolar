@@ -59,18 +59,28 @@ async def listar_turmas(
     nivel: Optional[str] = Query(None, description="Filtrar por nível"),
     periodo: Optional[str] = Query(None, description="Filtrar por período"),
     ano_letivo: Optional[int] = Query(None, description="Filtrar por ano letivo"),
-    ativo: bool = Query(True, description="Mostrar apenas turmas ativas")
+    ativo: bool = Query(True, description="Mostrar apenas turmas ativas"),
+    # Temporário: simular usuário logado via query param
+    usuario_id: Optional[str] = Query(None, description="ID do usuário logado"),
+    usuario_tipo: Optional[str] = Query(None, description="Tipo do usuário")
 ):
     """
-    Lista todas as turmas com filtros opcionais
+    Lista turmas com filtros opcionais e restrições por tipo de usuário
     """
     try:
         supabase = get_supabase()
         
-        # Começar query
-        query = supabase.table("turmas").select("*")
+        # Começar query com JOIN para trazer dados do professor
+        query = supabase.table("turmas").select("""
+            *,
+            professor:usuarios!turmas_professor_id_fkey(
+                id,
+                nome,
+                email
+            )
+        """)
         
-        # Aplicar filtros
+        # Aplicar filtros básicos
         if nivel:
             query = query.eq("nivel", nivel)
         if periodo:
@@ -79,17 +89,34 @@ async def listar_turmas(
             query = query.eq("ano_letivo", ano_letivo)
         query = query.eq("ativo", ativo)
         
-        # Ordenar por série e turma
+        # Aplicar filtros baseado no tipo de usuário
+        if usuario_tipo == "professor" and usuario_id:
+            # Professor vê apenas suas turmas
+            query = query.eq("professor_id", usuario_id)
+        elif usuario_tipo == "coordenador" and usuario_id:
+            # Coordenador vê turmas dos professores que coordena
+            # Por enquanto, vamos mostrar todas (implementar depois)
+            pass
+        # Admin vê tudo (não precisa filtro)
+        
+        # Ordenar
         query = query.order("serie").order("turma")
         
         result = query.execute()
         
         turmas = []
         for turma_data in result.data:
+            # Extrair dados do professor
+            professor_data = turma_data.pop('professor', None)
+            
             turma = TurmaResponse(**turma_data)
             turma.nome_completo = f"{turma.serie} {turma.turma}"
             
-            # Contar alunos ativos na turma
+            # Adicionar nome do professor se disponível
+            if professor_data:
+                turma.professor_nome = professor_data.get('nome', 'Sem professor')
+            
+            # Contar alunos
             count_result = supabase.table("alunos")\
                 .select("id", count="exact")\
                 .eq("turma_id", str(turma.id))\
