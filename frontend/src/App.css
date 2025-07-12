@@ -1,0 +1,7 @@
+/* src/app.css */
+@import "tailwindcss";
+
+/* Customizações do tema v4 */
+@theme {
+  /* Você pode customizar cores, fontes, etc aqui */
+}
